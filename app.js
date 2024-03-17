@@ -61,8 +61,9 @@ app.use((req, res, next) => {
 app.use(express.static(join(__dirname, "public")));
 
 // 使用session中间件管理会话
+let session_secret = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
 app.use(session({
-    secret: "5df3f0e886180b812cee3a92915b26d8", // 会话密钥
+    secret: session_secret, // 会话密钥
     resave: false, // 不强制保存已初始化的会话
     saveUninitialized: true, // 自动初始化会话
     cookie: { maxAge: 1000 * 60 * 60 * 24 * 7 } // cookie有效期为一周
