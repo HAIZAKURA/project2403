@@ -7,7 +7,6 @@ import log4js from 'log4js';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import session from 'express-session';
-import mqtt from "mqtt";
 
 /**
  * 初始化 Express 应用
@@ -107,62 +106,4 @@ app.listen(port, () => {
     logger.info(`The Service is listening on port ${port}.`);
 });
 
-/** MQTT2MySQL Begin **/
-
-// MQTT连接建立
-const clientId = "mysql_adapter_" + Math.random().toString(16).substring(2, 8);
-const client = mqtt.connect("mqtt://sh.nya.run", {
-    clientId
-});
-
-// MQTT订阅主题
-const topic = ["device_report", "cloud/#"];
-const qos = 2
-client.subscribe(topic, { qos }, (err) => {
-    if (err) {
-        console.error(err);
-        return;
-    }
-    console.log("Subscribed to topic " + topic);
-})
-
-async function insert_into_box_log(data) {
-    
-}
-
-// 异步将数据插入到泄漏日志中
-import { LeakageLog } from './model.js';
-async function insert_into_leakage_log(data) {
-    try {
-        // 使用LeakageLog模型创建一个新的日志条目并插入到数据库中
-        await LeakageLog.create({
-            leakage_id: data.id,
-            msg_id: data.msg_id,
-            time_utc: data.param.time_utc,
-            V: data.param.V,
-            I: data.param.I,
-            R: data.param.R
-        });
-    } catch (err) {
-        // 如果插入过程中出现错误，将错误记录到日志中
-        logger.error(err);
-    }
-}
-
-async function insert_into_box_alert(data) {
-    
-}
-
-async function insert_into_leakage_alert(data) {
-    
-}
-
-// MQTT消息处理
-client.on("message", (topic, message) => {
-    if (topic == "device_report") {
-        let payload = JSON.parse(message.toString()).leakage;
-        insert_into_leakage_log(payload);
-    }
-});
-
-/** MQTT2MySQL End **/
+import { client } from './mqtt.js';
