@@ -61,7 +61,7 @@ app.use((req, res, next) => {
 app.use(express.static(join(__dirname, "public")));
 
 // 使用session中间件管理会话
-let session_secret = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+let session_secret = Math.random().toString(36).substring(2);
 app.use(session({
     secret: session_secret, // 会话密钥
     resave: false, // 不强制保存已初始化的会话
