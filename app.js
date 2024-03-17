@@ -77,6 +77,9 @@ app.use(session({
  */
 export { logger };
 
+// 导入MQTT客户端
+import { client } from './mqtt.js';
+
 /** Router Begin **/
 
 /**
@@ -105,5 +108,3 @@ app.listen(port, () => {
     logger.info('Service Starting...');
     logger.info(`The Service is listening on port ${port}.`);
 });
-
-import { client } from './mqtt.js';
