@@ -10,7 +10,6 @@ import session from 'express-session';
 
 /**
  * 初始化 Express 应用
- * @returns {express.Application} 返回一个配置好的 Express 应用实例
  */
 const app = express();
 
@@ -26,7 +25,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
  * 初始化 log4js 日志记录器
- * @returns {Logger} 返回一个配置好的日志记录器实例
  */
 const logger = log4js.getLogger();
 
