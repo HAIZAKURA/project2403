@@ -16,19 +16,15 @@ const sequelize = new Sequelize(mysql_db, mysql_user, mysql_pass, {
     logging: msg => logger.info(msg) // 配置日志记录，将 Sequelize 的日志信息转发给 logger.info 处理
 });
 
-// MySQL Connection Test
-try {
-    await sequelize.authenticate(); // 尝试验证数据库连接
-    logger.info('MySQL Connection has been established successfully.'); // 连接成功，记录日志
-} catch (error) {
-    logger.error('Unable to connect to the database:', error); // 连接失败，记录错误日志
-};
-
 // MySQL Sync
 (async () => {
-    // 同步所有数据库模型，并使用alter选项来允许对现有结构进行修改
-    await sequelize.sync({ alter: true });
-    logger.info("All models were synchronized successfully.");
+    try {
+        // 同步所有数据库模型
+        await sequelize.sync();
+        logger.info("All models were synchronized successfully.");
+    } catch (error) {
+        logger.error("Unable to synchronize models:", error);
+    }
 })();
 
 
