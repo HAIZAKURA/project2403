@@ -20,7 +20,7 @@ const sequelize = new Sequelize(mysql_db, mysql_user, mysql_pass, {
 (async () => {
     try {
         // 同步所有数据库模型
-        await sequelize.sync();
+        await sequelize.sync({ alter: true });
         logger.info("All models were synchronized successfully.");
     } catch (error) {
         logger.error("Unable to synchronize models:", error);
@@ -191,12 +191,81 @@ const Box = sequelize.define("Box", {
             model: Road,
             key: "road_id"
         }
-    }
+    },
+    t_hour: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    t_minute: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    t_s1: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    t_s1_b: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    t_s2: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    t_s2_b: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    t_s3: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    t_s3_b: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    t_s4: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    t_s4_b: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
     }, {
         tableName: "box",
         timestamps: false,
         indexes: [{
             fields: ["region_id", "road_id"]
+        }]
+});
+
+// BoxState Model
+const BoxState = sequelize.define("BoxState", {
+    box_id: {
+        type: DataTypes.STRING(16),
+        allowNull: false,
+        references: {
+            model: Box,
+            key: "box_id"
+        }
+    },
+    state: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
+    },
+    brightness: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
+    }
+    }, {
+        tableName: "box_state",
+        timestamps: false,
+        indexes: [{
+            unique: true,
+            fields: ["box_id"]
         }]
 });
 
@@ -214,7 +283,7 @@ const BoxLog = sequelize.define("BoxLog", {
         type: DataTypes.FLOAT,
         allowNull: false
     },
-    CURR: {
+    CUR: {
         type: DataTypes.FLOAT,
         allowNull: false
     },
@@ -343,6 +412,7 @@ export {
     Road,
     Box,
     BoxLog,
+    BoxState,
     LeakageLog,
     BoxAlert,
     LeakageAlert
