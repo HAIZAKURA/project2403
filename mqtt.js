@@ -1,5 +1,5 @@
 import mqtt from "mqtt";
-import { Box, BoxLog, BoxState, LeakageLog } from './model.js';
+import { Box, BoxLog, BoxState, LeakageLog, LeakageAlert, Setting } from './model.js';
 import { logger } from "./app.js";
 import crc16 from 'node-crc16';
 
@@ -34,7 +34,28 @@ client.subscribe(topic, { qos }, (err) => {
 /** ================以下漏电保护部分================= **/
 /** ============================================== **/
 
-// 异步将数据插入到漏电保护设备日志中
+// 漏电保护设备电压上限
+let leakage_limit_vol = 0;
+
+// 漏电保护设备电流上线
+let leakage_limit_cur = 0;
+
+// 漏电保护设备电阻上限
+let leakage_limit_res = 60;
+
+/**
+ * Subscribe
+ * 异步插入漏电保护设备日志到数据库
+ * @param {Object} data - 要插入的日志数据对象
+ * @param {number} data.id - 泄漏事件的唯一标识符
+ * @param {string} data.msg_id - 消息的唯一标识符
+ * @param {Object} data.param - 包含泄漏事件的参数对象
+ * @param {number} data.param.time_utc - 泄漏事件发生的时间（UTC）
+ * @param {number} data.param.V - 泄漏事件时的电压
+ * @param {number} data.param.I - 泄漏事件时的电流
+ * @param {number} data.param.R - 泄漏事件时的电阻
+ * @returns {void} - 不返回任何内容
+ */
 async function leakage_insert_log(data) {
     try {
         // 使用LeakageLog模型创建一个新的日志条目并插入到数据库中
@@ -46,17 +67,59 @@ async function leakage_insert_log(data) {
             I: data.param.I,
             R: data.param.R
         });
+        // 电流大于限值
+        if (data.param.I > leakage_limit_cur) {
+            leakage_insert_alert(data, 1);
+        }
+        // 电压大于限值
+        if (data.param.V > leakage_limit_vol) {
+            leakage_insert_alert(data, 2);
+        }
+        // 电阻大于限值
+        if (data.param.R > leakage_limit_res) {
+            leakage_insert_alert(data, 4);
+        }
     } catch (err) {
         // 如果插入过程中出现错误，将错误记录到日志中
         logger.error(err);
     }
 }
 
-async function leakage_insert_alert(data) {
-    
+/**
+ * 记录漏电保护警报
+ * 
+ * @param {Object} data 包含警报数据的对象，应包含id、param和time_utc字段
+ * @param {number} type 警报的类型，决定从data中提取哪个参数进行插入
+ * @returns {undefined} 函数没有返回值
+ */
+async function leakage_insert_alert(data, type) {
+    let alert_content = 0;
+    // 根据type选择合适的alert_content
+    if (type == 1) {
+        alert_content = data.param.I;
+    } else if (type == 2) {
+        alert_content = data.param.V;
+    } else if (type == 3 || type == 4) {
+        alert_content = data.param.R;
+    } else {
+        logger.error("Unknown alert type: " + type); // 处理未知警报类型
+        return;
+    }
+    try {
+        // 尝试创建一个新的警报记录
+        await LeakageAlert.create({
+            leakage_id: data.id,
+            alert_type: type,
+            alert_content: alert_content,
+            time_utc: data.param.time_utc
+        })
+    } catch (err) {
+        logger.error(err); // 捕获并记录创建过程中可能出现的错误
+    }
 }
 
 /**
+ * Subscribe
  * 设置漏电保护设备参数
  * @param {string} id 漏电保护设备ID
  * @param {number} measure_ground_res_time 测量接地电阻的时间
@@ -98,6 +161,7 @@ async function set_leakage(id, measure_ground_res_time, mqtt_upload_time, ground
 }
 
 /**
+ * Publish
  * 测量漏电保护设备接地电阻
  * @param {string} id 漏电保护设备ID
  * @returns {boolean} 如果消息发布成功返回true，否则返回false。
@@ -139,7 +203,7 @@ function padToFourDigits(value) {
     return value.toString(16).padStart(4, '0').toUpperCase();
 }
 
-async function light_insert_log(data) {
+async function light_insert_log(id, data) {
     
 }
 
@@ -148,6 +212,7 @@ async function light_insert_alert(data) {
 }
 
 /**
+ * Publish
  * 打开指定ID的灯
  * @param {string} id 设备ID
  * @param {number} brightness 亮度，0-100
@@ -184,6 +249,7 @@ async function light_on(id, brightness) {
 }
 
 /**
+ * Publish
  * 关闭指定ID的灯
  * @param {string} id 设备ID
  * @returns {boolean} 如果消息成功发布，则返回true；否则返回false。
@@ -213,6 +279,7 @@ async function light_off(id) {
 }
 
 /**
+ * Publish
  * 设置时间策略
  * @param {string} id 设备ID
  * @param {object} data 包含设置时间所需的数据对象
@@ -259,6 +326,7 @@ async function light_set_time(id, data) {
 }
 
 /**
+ * Publish
  * 查询时间策略
  * @param {string} id 设备ID
  * @returns {boolean} 如果消息发布成功返回true，否则返回false
@@ -288,6 +356,7 @@ async function light_query_time(id) {
 }
 
 /**
+ * Subscribe
  * 更新时间策略
  * @param {string} id 设备ID
  * @param {Array} data 包含灯光设置数据的数组，每个元素都是一个16进制字符串
@@ -331,6 +400,7 @@ async function light_update_time(id, data) {
 }
 
 /**
+ * Publish
  * 查询 电压 电流 电量值
  * @param {string} id 设备ID
  * @returns {boolean} 如果消息发布成功则返回true，否则返回false
@@ -365,6 +435,7 @@ async function light_query_power(id) {
 }
 
 /**
+ * Subscribe
  * 记录 电压 电流 电量值
  * @param {string} id 设备ID
  * @param {Array} data 包含电压、电流和电量值的数组，每个元素以十六进制字符串形式表示
@@ -393,6 +464,7 @@ async function light_insert_power(id, data) {
 }
 
 /**
+ * Subscribe
  * 更新设备状态
  * @param {string} id 设备ID
  * @param {Array} data 包含状态和亮度的数组，其中第一个元素是状态值，第二个元素是亮度值，都以16进制字符串形式提供
@@ -416,6 +488,7 @@ async function light_update_state(id, data) {
 }
 
 /**
+ * Publish
  * 查询设备状态
  * @param {string} id 设备ID
  * @returns {boolean} 如果消息成功发布，则返回true；否则返回false
@@ -451,11 +524,112 @@ client.on("message", (topic, message) => {
         leakage_insert_log(payload);
     } else if (topic.startsWith("/a13jYFS3MfN/")) {
         let id = topic.split("/")[2];
-        let msg = message.toString("hex").toUpperCase();
-        console.log(msg);
+        let op = topic.split("/")[4];
+        if (op == "update") {
+            let msg = message.toString("hex").toUpperCase();
+            let cmd_op = msg.substring(16, 18);
+            // console.log(msg);
+            // console.log(cmd_op);
+            let data = new Array();
+            switch (cmd_op)
+            {
+                case "01": // 定时心跳
+                    data.push(msg.substring(26, 28));
+                    data.push(msg.substring(28, 30));
+                    light_update_state(id, data);                
+                    break;
+                case "B1": // 开关灯上报
+                    data.push(msg.substring(26, 28));
+                    data.push(msg.substring(28, 30));
+                    light_update_state(id, data);
+                    break;
+                case "B2": // 更新时间策略
+                    light_update_time(id, data);
+                    break;
+                case "B3": // 更新时间策略
+                    light_update_time(id, data);
+                    break;
+                case "B4": // 电量上报
+                    light_insert_power(id, data);
+                    break;
+                case "B9": // 状态上报
+                    data.push(msg.substring(26, 28));
+                    data.push(msg.substring(28, 30));
+                    light_update_state(id, data); 
+                    break;
+                case "AA":
+                    break;
+                case "BA":
+                    break;
+            }
+            data = [];
+        }
     }
 });
 
 /** MQTT2MySQL End **/
+
+// 加载设置
+(async () => {
+    try {
+        let [setting, created] = await Setting.findOrCreate({
+            where: {
+                setting_name: 'leakage_vol'
+            },
+            defaults: {
+                setting_value: 0
+            }
+        });
+        if (created) {
+            logger.info("[leakage_vol] Initialized the setting value.")
+        } else {
+            leakage_limit_vol = setting.setting_value;
+        }
+    } catch (error) {
+        logger.error("Unable to initialize the setting value:", error);
+    }
+})();
+
+// 加载设置
+(async () => {
+    try {
+        let [setting, created] = await Setting.findOrCreate({
+            where: {
+                setting_name: 'leakage_cur'
+            },
+            defaults: {
+                setting_value: 0
+            }
+        });
+        if (created) {
+            logger.info("[leakage_cur] Initialized the setting value.")
+        } else {
+            leakage_limit_cur = setting.setting_value;
+        }
+    } catch (error) {
+        logger.error("Unable to initialize the setting value:", error);
+    }
+})();
+
+// 加载设置
+(async () => {
+    try {
+        let [setting, created] = await Setting.findOrCreate({
+            where: {
+                setting_name: 'leakage_res'
+            },
+            defaults: {
+                setting_value: 60
+            }
+        });
+        if (created) {
+            logger.info("[leakage_res] Initialized the setting value.")
+        } else {
+            leakage_limit_res = setting.setting_value;
+        }
+    } catch (error) {
+        logger.error("Unable to initialize the setting value:", error);
+    }
+})();
 
 export { client };
