@@ -58,6 +58,10 @@
 // data.push(str.substring(4, 8));
 // console.log(data[0]);
 
-let str = "/a13jYFS3MfN/1A07000011BB/user/get"
-let a = str.split("/");
-console.log(a[2]);
+// let str = "/a13jYFS3MfN/1A07000011BB/user/get"
+// let a = str.split("/");
+// console.log(a[2]);
+
+let data = new Array();
+data.push("a");
+console.log(data);
