@@ -66,10 +66,11 @@ const Setting = sequelize.define("Setting", {
     },
     setting_name: {
         type: DataTypes.STRING(32),
+        unique: true,
         allowNull: false,
     },
     setting_value: {
-        type: DataTypes.STRING(32),
+        type: DataTypes.FLOAT,
         allowNull: false,
     }}, {
         tableName: "setting",
@@ -384,11 +385,16 @@ const LeakageAlert = sequelize.define("LeakageAlert", {
         }
     },
     alert_type: {
+        // 1 = 电流
+        // 2 = 电压
+        // 3 = 电阻异常
+        // 4 = 电阻
         type: DataTypes.INTEGER,
         allowNull: false
     },
     alert_content: {
-        type: DataTypes.STRING(128),
+        type: DataTypes.FLOAT,
+        defaultValue: 0,
         allowNull: false
     },
     time_utc: {
