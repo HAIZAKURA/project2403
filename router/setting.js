@@ -15,7 +15,7 @@ const router = express.Router();
  * 401: Unauthorized
  */
 
-/** Rate Router Begin **/
+/** Setting Router Begin **/
 
 /**
  * 更新设置信息
@@ -60,5 +60,7 @@ router.put('/:setting_id', async (req, res) => {
         });
     }
 });
+
+/** Setting Router End **/
 
 export { router as setting_router };
