@@ -1,5 +1,5 @@
 import mqtt from "mqtt";
-import { Box, BoxLog, BoxState, LeakageLog, LeakageAlert, Setting } from './model.js';
+import { Box, BoxLog, BoxState, LeakageLog, LeakageAlert, Setting, BoxAlert } from './model.js';
 import { logger } from "./app.js";
 import crc16 from 'node-crc16';
 
@@ -201,14 +201,6 @@ function padToTwoDigits(value) {
 // 辅助函数：将数字转换为四位的十六进制字符串
 function padToFourDigits(value) {
     return value.toString(16).padStart(4, '0').toUpperCase();
-}
-
-async function light_insert_log(id, data) {
-    
-}
-
-async function light_insert_alert(data) {
-    
 }
 
 /**
@@ -517,6 +509,69 @@ async function light_query_state(id) {
     }
 }
 
+/**
+ * 处理设备故障报警
+ * @param {string} id 设备ID
+ * @param {Array} data 警报数据数组 [报警设备, 报警内容]
+ * 根据设备类型和警报类型从数据库中查找最新记录 并根据找到的记录创建警报
+ * 然后构造MQTT消息
+ * 该函数没有返回值
+ */
+async function light_handle_alert(id ,data) {
+    setTimeout(() => {
+        let alert_device = data[0]; // 设备类型
+        let alert_type = data[1]; // 警报类型
+        let alert_content = ''; // 警报内容初始化
+        // 查找最新的日志记录
+        BoxLog.findOne({
+            where: {
+                box_id: id
+            },
+            order: [['time_utc', 'DESC']]
+        }).then(box_log => {
+            if (box_log) {
+                // 处理特定设备类型的警报
+                if (alert_device == '05' || alert_device == '06') {
+                    // 根据警报类型设置警报内容
+                    if (alert_type == '02') {
+                        // 电压警报
+                        alert_content = box_log.VOL;
+                    } else if (alert_type == '04') {
+                        // 电流警报
+                        alert_content = box_log.CUR;
+                    }
+                }
+                // 在数据库中创建新的警报记录
+                BoxAlert.create({
+                    box_id: id,
+                    alert_device: alert_device,
+                    alert_type: alert_type,
+                    alert_content: alert_content,
+                    time_utc: box_log.time_utc
+                }).then(() => {
+                    // 构造MQTT消息的主题
+                    let topic = "/a13jYFS3MfN/" + id.toUpperCase() + "/user/get";
+                    // 构造控制灯的命令字符串
+                    let cmdStr = "AA00" + id.toUpperCase() + "BA00";
+                    // 计算命令字符串的校验和
+                    let sum = crc16.checkSum(cmdStr);
+                    // 将命令字符串和校验和转换为Buffer，以便发送
+                    let cmd = Buffer.from(cmdStr + sum, "hex");
+                    try {
+                        // 尝试通过MQTT发布消息
+                        client.publishAsync(topic, cmd, { qos: 2 });
+                    } catch (err) {
+                        logger.error(err);   
+                    }
+                });
+            } else {
+                // 如果没有找到日志记录，记录错误
+                logger.error('No box log found');
+            }
+        });
+    }, 2000); // 延迟3秒执行
+}
+
 // MQTT消息处理
 client.on("message", (topic, message) => {
     if (topic == "device_report") {
@@ -534,32 +589,58 @@ client.on("message", (topic, message) => {
             switch (cmd_op)
             {
                 case "01": // 定时心跳
-                    data.push(msg.substring(26, 28));
-                    data.push(msg.substring(28, 30));
+                    data.push(msg.substring(26, 28)); // 灯状态
+                    data.push(msg.substring(28, 30)); // 灯亮度
                     light_update_state(id, data);                
                     break;
-                case "B1": // 开关灯上报
-                    data.push(msg.substring(26, 28));
-                    data.push(msg.substring(28, 30));
+                case "B1": // 开关灯
+                    data.push(msg.substring(26, 28)); // 灯状态
+                    data.push(msg.substring(28, 30)); // 灯亮度
                     light_update_state(id, data);
                     break;
-                case "B2": // 更新时间策略
+                case "B2": // 设置时间策略成功
+                    data.push(msg.substring(24, 26)); // 开始小时
+                    data.push(msg.substring(26, 28)); // 开始分钟
+                    data.push(msg.substring(28, 32)); // 第一阶段分钟
+                    data.push(msg.substring(32, 34)); // 第一阶段亮度
+                    data.push(msg.substring(34, 38)); // 第二阶段分钟
+                    data.push(msg.substring(38, 40)); // 第二阶段亮度
+                    data.push(msg.substring(40, 44)); // 第三阶段分钟
+                    data.push(msg.substring(44, 46)); // 第三阶段亮度
+                    data.push(msg.substring(46, 50)); // 第四阶段分钟
+                    data.push(msg.substring(50, 52)); // 第四阶段亮度
                     light_update_time(id, data);
                     break;
-                case "B3": // 更新时间策略
+                case "B3": // 返回时间策略
+                    data.push(msg.substring(24, 26)); // 开始小时
+                    data.push(msg.substring(26, 28)); // 开始分钟
+                    data.push(msg.substring(28, 32)); // 第一阶段分钟
+                    data.push(msg.substring(32, 34)); // 第一阶段亮度
+                    data.push(msg.substring(34, 38)); // 第二阶段分钟
+                    data.push(msg.substring(38, 40)); // 第二阶段亮度
+                    data.push(msg.substring(40, 44)); // 第三阶段分钟
+                    data.push(msg.substring(44, 46)); // 第三阶段亮度
+                    data.push(msg.substring(46, 50)); // 第四阶段分钟
+                    data.push(msg.substring(50, 52)); // 第四阶段亮度
                     light_update_time(id, data);
                     break;
-                case "B4": // 电量上报
+                case "B4": // 返回 电压 电流 用电量
+                    data.push(msg.substring(24, 32)); // 电压
+                    data.push(msg.substring(32, 40)); // 电流
+                    data.push(msg.substring(40, 48)); // 用电量
                     light_insert_power(id, data);
                     break;
-                case "B9": // 状态上报
-                    data.push(msg.substring(26, 28));
-                    data.push(msg.substring(28, 30));
+                case "B9": // 查询灯状态
+                    data.push(msg.substring(26, 28)); // 灯状态
+                    data.push(msg.substring(28, 30)); // 灯亮度
                     light_update_state(id, data); 
                     break;
-                case "AA":
+                case "AA": // 设备故障报警
+                    data.push(msg.substring(26, 28)); // 故障设备
+                    data.push(msg.substring(28, 30)); // 故障内容
+                    light_handle_alert(id, data);
                     break;
-                case "BA":
+                case "BA": // 报警成功
                     break;
             }
             data = [];
