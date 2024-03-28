@@ -93,6 +93,9 @@ import { client } from './mqtt.js';
 import { user_router } from './router/user.js';
 app.use('/api/user', user_router);
 
+import { setting_router } from './router/setting.js';
+app.use('/api/setting', setting_router);
+
 /** Robots.txt **/
 app.get('/robots.txt', (req, res) => {
     res.type('text/plain');
