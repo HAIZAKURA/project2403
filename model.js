@@ -353,13 +353,28 @@ const BoxAlert = sequelize.define("BoxAlert", {
             key: "box_id"
         }
     },
+    alert_device: {
+        // 1
+        // 2
+        // 3
+        // 4
+        // 5
+        // 6
+        type: DataTypes.STRING(4),
+        allowNull: false
+    },
     alert_type: {
-        type: DataTypes.INTEGER,
+        // bit0
+        // bit1
+        // bit2
+        // bit3
+        type: DataTypes.STRING(4),
         allowNull: false
     },
     alert_content: {
-        type: DataTypes.STRING(128),
-        allowNull: false
+        type: DataTypes.FLOAT,
+        allowNull: false,
+        defaultValue: 0
     },
     time_utc: {
         type: DataTypes.BIGINT,
