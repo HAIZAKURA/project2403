@@ -62,6 +62,18 @@
 // let a = str.split("/");
 // console.log(a[2]);
 
-let data = new Array();
-data.push("a");
-console.log(data);
+// let data = new Array();
+// data.push("a");
+// console.log(data);
+
+async function test() {
+    setTimeout(() => {
+        console.log("aaa");
+    }, 3000);
+}
+
+test();
+for (let i =1; i < 10; i++) {
+    console.log(i);
+}
+
