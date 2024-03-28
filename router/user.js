@@ -16,7 +16,7 @@ const router = express.Router();
  * 401: Unauthorized
  */
 
-/** Rate Router Begin **/
+/** User Router Begin **/
 
 /**
  * 处理用户登录请求
@@ -94,7 +94,8 @@ router.post('', async (req, res) => {
             // 根据用户创建结果返回相应的响应码
             if (user) {
                 res.json({
-                    code: 200
+                    code: 200,
+                    data: user
                 });
             } else {
                 res.json({
@@ -213,6 +214,6 @@ router.delete('/:uid', async (req, res) => {
     }
 });
 
-/** Rate Router End **/
+/** User Router End **/
 
 export { router as user_router };
