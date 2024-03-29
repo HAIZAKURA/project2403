@@ -93,8 +93,25 @@ import { client } from './mqtt.js';
 import { user_router } from './router/user.js';
 app.use('/api/user', user_router);
 
+/** Setting Router **/
 import { setting_router } from './router/setting.js';
 app.use('/api/setting', setting_router);
+
+/** Region Router **/
+import { region_router } from './router/region.js';
+app.use('/api/region', region_router);
+
+/** User Region Router **/
+import { user_region_router } from './router/user_region.js';
+app.use('/api/user_region', user_region_router);
+
+/** Road Router **/
+import { road_router } from './router/road.js';
+app.use('/api/road', road_router);
+
+/** Box Router **/
+import { box_router } from './router/box.js';
+app.use('/api/box', box_router);
 
 /** Robots.txt **/
 app.get('/robots.txt', (req, res) => {
