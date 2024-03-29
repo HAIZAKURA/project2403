@@ -1,7 +1,7 @@
 import mqtt from "mqtt";
 import { Box, BoxLog, BoxState, LeakageLog, LeakageAlert, Setting, BoxAlert } from './model.js';
 import { logger } from "./app.js";
-import crc16 from 'node-crc16';
+import { crc16Modbus } from "./crc16.js";
 
 /** MQTT2MySQL Begin **/
 
@@ -228,7 +228,7 @@ async function light_on(id, brightness) {
         // 构造控制灯的命令字符串
         let cmdStr = "AA00" + id.toUpperCase() + "A104010101" + brightnessStr;
         // 计算命令字符串的校验和
-        let sum = crc16.checkSum(cmdStr);
+        let sum = crc16Modbus(cmdStr);
         // 将命令字符串和校验和转换为Buffer格式，以供发送
         let cmd = Buffer.from(cmdStr + sum, "hex");
         // 尝试发布消息到MQTT主题
@@ -257,7 +257,7 @@ async function light_off(id) {
     // 构造控制灯的命令字符串
     let cmdStr = "AA00" + id.toUpperCase() + "A10401010000";
     // 计算命令字符串的校验和
-    let sum = crc16.checkSum(cmdStr);
+    let sum = crc16Modbus(cmdStr);
     // 将命令字符串和校验和转换为Buffer格式，以供发送
     let cmd = Buffer.from(cmdStr + sum, "hex");
     try {
@@ -304,7 +304,7 @@ async function light_set_time(id, data) {
     // 构造控制灯的命令字符串
     let cmdStr = "AA00" + id.toUpperCase() + + "A2100101" + hour + minute + s1_t + s1_b + s2_t + s2_b + s3_t + s3_b + s4_t + s4_b;
     // 计算命令字符串的校验和
-    let sum = crc16.checkSum(cmdStr);
+    let sum = crc16Modbus(cmdStr);
     // 将命令字符串和校验和转换为Buffer，以便发送
     let cmd = Buffer.from(cmdStr + sum, "hex");
     try {
@@ -334,7 +334,7 @@ async function light_query_time(id) {
     // 构造控制灯的命令字符串
     let cmdStr = "AA00" + id.toUpperCase() + "A300";
     // 计算命令字符串的校验和
-    let sum = crc16.checkSum(cmdStr);
+    let sum = crc16Modbus(cmdStr);
     // 将命令字符串和校验和转换为Buffer，以便发送
     let cmd = Buffer.from(cmdStr + sum, "hex");
     try {
@@ -411,7 +411,7 @@ async function light_query_power(id) {
     let cmdStr = "AA00" + id.toUpperCase() + "A400";
 
     // 计算命令字符串的校验和
-    let sum = crc16.checkSum(cmdStr);
+    let sum = crc16Modbus(cmdStr);
 
     // 将命令字符串和校验和转换为Buffer，以便发送
     let cmd = Buffer.from(cmdStr + sum, "hex");
@@ -496,7 +496,7 @@ async function light_query_state(id) {
     // 构造控制灯的命令字符串
     let cmdStr = "AA00" + id.toUpperCase() + "A900";
     // 计算命令字符串的校验和
-    let sum = crc16.checkSum(cmdStr);
+    let sum = crc16Modbus(cmdStr);
     // 将命令字符串和校验和转换为Buffer，以便发送
     let cmd = Buffer.from(cmdStr + sum, "hex");
     try {
@@ -554,7 +554,7 @@ async function light_handle_alert(id ,data) {
                     // 构造控制灯的命令字符串
                     let cmdStr = "AA00" + id.toUpperCase() + "BA00";
                     // 计算命令字符串的校验和
-                    let sum = crc16.checkSum(cmdStr);
+                    let sum = crc16Modbus(cmdStr);
                     // 将命令字符串和校验和转换为Buffer，以便发送
                     let cmd = Buffer.from(cmdStr + sum, "hex");
                     try {
