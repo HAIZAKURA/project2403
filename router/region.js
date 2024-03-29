@@ -3,7 +3,7 @@
 
 import express from 'express';
 import { logger } from '../app.js';
-import { Region } from '../model.js';
+import { Region, Road, Users } from '../model.js';
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ const router = express.Router();
 /** Region Router Begin **/
 
 /**
- * 使用GET请求获取所有地区信息
+ * 使用GET请求获取所有地区信息及其包含的道路信息
  * @param {Object} req 请求对象，包含请求参数和信息
  * @param {Object} res 响应对象，用于返回响应数据和状态码
  */
@@ -26,18 +26,11 @@ router.get('', async (req, res) => {
     try {
         // 尝试从Region模型中查询所有地区信息
         let regions = await Region.findAll();
-        if (regions) {
-            // 如果查询结果存在，将结果以JSON格式返回，并设置状态码为200
-            res.json({
-                code: 200,
-                data: regions
-            });
-        } else {
-            // 如果查询结果为空，返回状态码400表示请求失败
-            res.json({
-                code: 400
-            });
-        }
+        // 如果查询结果存在，将结果以JSON格式返回，并设置状态码为200
+        res.json({
+            code: 200,
+            data: regions
+        });
     } catch (error) {
         // 捕获在查询过程中发生的任何错误，并记录到日志中
         logger.error('Error:', error);
@@ -47,6 +40,41 @@ router.get('', async (req, res) => {
         });
     }
 });
+
+/**
+ * 根据区域ID获取区域信息及其包含的道路信息。
+ * 
+ * @param {Object} req - 请求对象，包含路径参数region_id。
+ * @param {Object} res - 响应对象，用于返回区域信息或错误信息。
+ * @returns {Object} 返回一个包含区域信息的对象，或者在发生错误时返回一个包含错误代码的对象。
+ */
+router.get('/:region_id', async (req, res) => {
+    try {
+        // 通过区域ID异步查询区域信息及其包含的道路信息
+        let region = await Region.findByPk(req.params.region_id, {
+            include: [{
+                model: Users,
+                as: 'users_region',
+                attributes: ['uid', 'username']
+            }, {
+                model: Road,
+                as: 'roads',
+                attributes: ['road_id', 'road_name']
+            }]
+        });
+        // 成功查询到后，将区域信息以JSON格式返回
+        res.json({
+            code: 200,
+            data: region
+        });
+    } catch (error) {
+        // 查询出错时，记录错误日志，并返回错误代码
+        logger.error('Error:', error);
+        res.json({
+            code: 400
+        });
+    }
+})
 
 /**
  * 处理POST请求，用于创建新的地区信息。
