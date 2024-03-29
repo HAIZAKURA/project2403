@@ -8,12 +8,14 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "export MYSQL_HOST=192.168.100.30 && export MYSQL_PASS=igQyl6aWUmuqauUT7N/tt1QbTMoSHGLH && node app.js"
+    "start": "export MYSQL_HOST=192.168.100.30 && export MYSQL_PASS=igQyl6aWUmuqauUT7N/tt1QbTMoSHGLH && node app.js",
+    "startclean": "node app.js"
   },
   "dependencies": {
     "body-parser": "^1.20.2",
     "express": "^4.18.3",
     "express-session": "^1.18.0",
+    "js-md5": "^0.8.3",
     "log4js": "^6.9.1",
     "mqtt": "^5.3.6",
     "mysql2": "^3.9.2",
