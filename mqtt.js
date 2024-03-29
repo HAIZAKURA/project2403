@@ -1,7 +1,7 @@
 import mqtt from "mqtt";
 import { Box, BoxLog, BoxState, LeakageLog, LeakageAlert, Setting, BoxAlert } from './model.js';
 import { logger } from "./app.js";
-import { crc16Modbus } from "./crc16.js";
+import { crc16Modbus } from "./tool/crc16.js";
 
 /** MQTT2MySQL Begin **/
 
