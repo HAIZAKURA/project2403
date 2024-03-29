@@ -3,7 +3,7 @@
 
 import express from 'express';
 import { logger } from '../app.js';
-import { Users } from '../model.js';
+import { Region, Users } from '../model.js';
 import { md5 } from 'js-md5';
 
 const router = express.Router();
@@ -27,6 +27,7 @@ router.post('/login', async (req, res) => {
     try {
         // 在用户表中查找指定用户名和经过MD5加密的密码的用户
         let user = await Users.findOne({
+            attributes: ['uid', 'username', 'role'],
             where: {
                 username: req.body.username,
                 password: md5(req.body.username + req.body.password)
@@ -77,6 +78,82 @@ router.get('/logout', async (req, res) => {
 });
 
 /**
+ * 获取所有用户信息的路由处理函数
+ * 
+ * @param {Object} req 请求对象，包含session信息和用户请求数据
+ * @param {Object} res 响应对象，用于返回处理结果
+ * @returns {Void} 不返回具体值，通过res发送json响应
+ */
+router.get('', async (req, res) => {
+    try {
+        // 检查用户是否登录且角色为1（管理员）
+        if (req.session.isLogin && req.session.user.role == 1) {
+            // 查询所有用户的信息，仅包含id, username, role
+            let users = await Users.findAll({
+                attributes: ['id', 'username', 'role']
+            });
+            // 返回成功响应，携带用户信息
+            res.json({
+                code: 200,
+                data: users
+            });
+        } else {
+            // 如果用户未登录或不是管理员角色，返回未授权响应
+            res.json({
+                code: 401
+            });
+        }
+    } catch (error) {
+        // 捕获并记录错误，返回通用错误响应
+        logger.error('Error:', error);
+        res.json({
+            code: 400
+        });
+    }
+});
+
+/**
+ * 根据用户ID获取用户信息
+ * 
+ * @param {Object} req 请求对象，包含用户ID和会话信息
+ * @param {Object} res 响应对象，用于返回用户信息或错误信息
+ * @returns {Object} 返回一个包含用户信息或错误代码的JSON对象
+ */
+router.get('/:uid', async (req, res) => {
+    try {
+        // 检查用户是否已登录
+        if (req.session.isLogin) {
+            // 通过用户ID查找用户信息，包括用户角色和所属区域信息
+            let user = await Users.findByPk(req.params.uid, {
+                attributes: ['uid', 'username', 'role'], // 选择需要返回的用户属性
+                include: {
+                    model: Region,
+                    as: 'users_region',
+                    attributes: ['region_id', 'region_name'] // 包含区域ID和区域名称
+                }
+            });
+            // 返回成功响应，包含用户信息
+            res.json({
+                code: 200,
+                data: user
+            });
+        } else {
+            // 如果用户未登录，返回授权错误响应
+            res.json({
+                code: 401
+            });
+        }
+    } catch (error) {
+        // 捕获并记录错误
+        logger.error('Error:', error);
+        // 返回通用错误响应
+        res.json({
+            code: 400
+        });
+    }
+});
+
+/**
  * 处理用户注册请求
  * @param {Object} req 请求对象，包含用户提交的注册信息
  * @param {Object} res 响应对象，用于返回注册结果
@@ -94,8 +171,7 @@ router.post('', async (req, res) => {
             // 根据用户创建结果返回相应的响应码
             if (user) {
                 res.json({
-                    code: 200,
-                    data: user
+                    code: 200
                 });
             } else {
                 res.json({
