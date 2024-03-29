@@ -65,8 +65,7 @@ const Setting = sequelize.define("Setting", {
         primaryKey: true,
     },
     setting_name: {
-        type: DataTypes.STRING(32),
-        unique: true,
+        type: DataTypes.STRING(64),
         allowNull: false,
     },
     setting_value: {
@@ -123,6 +122,26 @@ const UsersRegion = sequelize.define("UsersRegion", {
         }]
 });
 
+/**
+ * 定义Region模型和Users模型之间的多对多关系
+ */
+Users.belongsToMany(Region, {
+    through: UsersRegion,
+    as: "users_region",
+    foreignKey: "uid",
+    onDelete: "CASCADE"
+});
+
+/**
+ * 定义Region模型和Users模型之间的多对多关系
+ */
+Region.belongsToMany(Users, {
+    through: UsersRegion,
+    as: "users_region",
+    foreignKey: "region_id",
+    onDelete: "CASCADE"
+});
+
 // Road Model
 const Road = sequelize.define("Road", {
     road_id: {
@@ -151,16 +170,33 @@ const Road = sequelize.define("Road", {
         }]
 });
 
+/**
+ * 定义Region模型和Road模型之间的多对一关系
+ */
+Region.hasMany(Road, {
+    foreignKey: "region_id",
+    as: "roads",
+    onDelete: "CASCADE"
+});
+
+/**
+ * 定义Region模型和Road模型之间的一对一关系
+ */
+Road.belongsTo(Region, {
+    foreignKey: "region_id",
+    as: "region",
+    onDelete: "CASCADE"
+});
+
 // Box Model
 const Box = sequelize.define("Box", {
     box_id: {
         type: DataTypes.STRING(16),
-        unique: true,
-        allowNull: false
+        allowNull: false,
+        primaryKey: true
     },
     leakage_id: {
         type: DataTypes.STRING(16),
-        unique: true,
         allowNull: false
     },
     light_id: {
@@ -237,7 +273,7 @@ const Box = sequelize.define("Box", {
         tableName: "box",
         timestamps: false,
         indexes: [{
-            fields: ["region_id", "road_id"]
+            fields: ["box_id", "leakage_id", "region_id", "road_id"]
         }]
 });
 
@@ -246,6 +282,7 @@ const BoxState = sequelize.define("BoxState", {
     box_id: {
         type: DataTypes.STRING(16),
         allowNull: false,
+        primaryKey: true,
         references: {
             model: Box,
             key: "box_id"
@@ -268,6 +305,22 @@ const BoxState = sequelize.define("BoxState", {
             unique: true,
             fields: ["box_id"]
         }]
+});
+
+/**
+ * 定义Box模型与BoxState模型之间的一对一关系
+ */
+Box.hasOne(BoxState, {
+    foreignKey: "box_id",
+    onDelete: "CASCADE"
+});
+
+/**
+ * 定义Box模型与BoxState模型之间的一对一关系
+ */
+BoxState.belongsTo(Box, {
+    foreignKey: "box_id",
+    onDelete: "CASCADE"
 });
 
 // BoxLog Model
@@ -303,6 +356,22 @@ const BoxLog = sequelize.define("BoxLog", {
             unique: true,
             fields: ["box_id", "time_utc"]
         }]
+});
+
+/**
+ * 定义Box与BoxLog之间的多对一关系
+ */
+Box.hasMany(BoxLog, {
+    foreignKey: "box_id",
+    onDelete: "CASCADE"
+});
+
+/**
+ * 定义Box与BoxLog之间的一对一关系
+ */
+BoxLog.belongsTo(Box, {
+    foreignKey: "box_id",
+    onDelete: "CASCADE"
 });
 
 // LeakageLog Model
@@ -341,6 +410,22 @@ const LeakageLog = sequelize.define("LeakageLog", {
         indexes: [{
             fields: ["leakage_id", "time_utc"]
         }]
+});
+
+/**
+ * 定义Box与LeakageLog之间的多对一关系
+ */
+Box.hasMany(LeakageLog, {
+    foreignKey: "leakage_id",
+    onDelete: "CASCADE"
+});
+
+/**
+ * 定义Box与LeakageLog之间的一对一关系
+ */
+LeakageLog.belongsTo(Box, {
+    foreignKey: "leakage_id",
+    onDelete: "CASCADE"
 });
 
 // BoxAlert Model
@@ -389,6 +474,22 @@ const BoxAlert = sequelize.define("BoxAlert", {
         }]
 });
 
+/**
+ * 定义Box与BoxAlert之间的多对一关系
+ */
+Box.hasMany(BoxAlert, {
+    foreignKey: "box_id",
+    onDelete: "CASCADE"
+});
+
+/**
+ * 定义Box与BoxAlert之间的一对一关系
+ */
+BoxAlert.belongsTo(Box, {
+    foreignKey: "box_id",
+    onDelete: "CASCADE"
+});
+
 // LeakageAlert Model
 const LeakageAlert = sequelize.define("LeakageAlert", {
     leakage_id: {
@@ -423,6 +524,22 @@ const LeakageAlert = sequelize.define("LeakageAlert", {
             unique: true,
             fields: ["leakage_id", "alert_type", "time_utc"]
         }]
+});
+
+/**
+ * 定义Box与LeakageLog之间的多对一关系
+ */
+Box.hasMany(LeakageAlert, {
+    foreignKey: "leakage_id",
+    onDelete: "CASCADE"
+});
+
+/**
+ * 定义Box与LeakageLog之间的一对一关系
+ */
+LeakageAlert.belongsTo(Box, {
+    foreignKey: "leakage_id",
+    onDelete: "CASCADE"
 });
 
 export {
