@@ -113,6 +113,10 @@ app.use('/api/road', road_router);
 import { box_router } from './router/box.js';
 app.use('/api/box', box_router);
 
+/** Box State Router **/
+import { box_state_router } from './router/box_state.js';
+app.use('/api/box_state', box_state_router);
+
 /** Robots.txt **/
 app.get('/robots.txt', (req, res) => {
     res.type('text/plain');
