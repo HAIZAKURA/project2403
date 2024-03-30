@@ -277,6 +277,26 @@ const Box = sequelize.define("Box", {
         }]
 });
 
+Box.belongsTo(Road, {
+    foreignKey: "road_id",
+    onDelete: "CASCADE"
+});
+
+Box.belongsTo(Region, {
+    foreignKey: "region_id",
+    onDelete: "CASCADE"
+});
+
+Region.hasMany(Box, {
+    foreignKey: "region_id",
+    onDelete: "CASCADE"
+});
+
+Road.hasMany(Box, {
+    foreignKey: "road_id",
+    onDelete: "CASCADE"
+});
+
 // BoxState Model
 const BoxState = sequelize.define("BoxState", {
     box_id: {
