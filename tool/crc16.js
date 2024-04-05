@@ -1,3 +1,6 @@
+// tool/crc16.js
+// Tools
+
 /**
  * 计算Modbus协议中的CRC16校验码
  * @param {string} hexStr 以十六进制字符串形式表示的数据
@@ -33,5 +36,3 @@ function crc16Modbus(hexStr) {
 }
 
 export { crc16Modbus };
-
-// console.log(crc16Modbus('AA001A07000011BBA10401010164'));
