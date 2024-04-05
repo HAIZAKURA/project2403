@@ -129,6 +129,10 @@ app.use('/api/box_alert', box_alert_router);
 import { leakage_log_router } from './router/leakage_log.js';
 app.use('/api/leakage_log', leakage_log_router);
 
+/** Leakage Alert Router **/
+import { leakage_alert_router } from './router/leakage_alert.js';
+app.use('/api/leakage_alert', leakage_alert_router);
+
 /** Robots.txt **/
 app.get('/robots.txt', (req, res) => {
     res.type('text/plain');
