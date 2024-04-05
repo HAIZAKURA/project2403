@@ -30,20 +30,24 @@ const sequelize = new Sequelize(mysql_db, mysql_user, mysql_pass, {
 
 // Users Model
 const Users = sequelize.define("Users", {
+    // 用户ID
     uid: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
     },
+    // 用户名
     username: {
         type: DataTypes.STRING(32),
         allowNull: false,
         primaryKey: true,
     },
+    // 用户密码
     password: {
         type: DataTypes.STRING(32),
         allowNull: false,
     },
+    // 用户角色 1:超级管理员 0:区域管理员 
     role: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -59,15 +63,18 @@ const Users = sequelize.define("Users", {
 
 // Setting Model
 const Setting = sequelize.define("Setting", {
+    // 设置ID
     setting_id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
     },
+    // 设置名称
     setting_name: {
         type: DataTypes.STRING(64),
         allowNull: false,
     },
+    // 设置值
     setting_value: {
         type: DataTypes.FLOAT,
         allowNull: false,
@@ -78,11 +85,13 @@ const Setting = sequelize.define("Setting", {
 
 // Region Model
 const Region = sequelize.define("Region", {
+    // 区域ID
     region_id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
     },
+    // 区域名称
     region_name: {
         type: DataTypes.STRING(32),
         allowNull: false,
@@ -98,6 +107,7 @@ const Region = sequelize.define("Region", {
 
 // UsersRegion Model
 const UsersRegion = sequelize.define("UsersRegion", {
+    // 用户ID
     uid: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -106,6 +116,7 @@ const UsersRegion = sequelize.define("UsersRegion", {
             key: "uid"
         }
     },
+    // 区域ID
     region_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -144,16 +155,19 @@ Region.belongsToMany(Users, {
 
 // Road Model
 const Road = sequelize.define("Road", {
+    // 道路ID
     road_id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
     },
+    // 道路名称
     road_name: {
         type: DataTypes.STRING(32),
         allowNull: false,
         primaryKey: true,
     },
+    // 区域ID
     region_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -190,29 +204,35 @@ Road.belongsTo(Region, {
 
 // Box Model
 const Box = sequelize.define("Box", {
+    // 盒子ID
     box_id: {
         type: DataTypes.STRING(16),
         allowNull: false,
         primaryKey: true
     },
+    // 漏电保护ID
     leakage_id: {
         type: DataTypes.STRING(16),
         allowNull: false
     },
+    // 灯柱ID
     light_id: {
         type: DataTypes.STRING(32),
         allowNull: false
     },
+    // 纬度
     latitude: {
         type: DataTypes.DOUBLE,
         allowNull: false,
         defaultValue: 0
     },
+    // 经度
     longitude: {
         type: DataTypes.DOUBLE,
         allowNull: false,
         defaultValue: 0
     },
+    // 区域ID
     region_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -221,6 +241,7 @@ const Box = sequelize.define("Box", {
             key: "region_id"
         }
     },
+    // 道路ID
     road_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -229,42 +250,52 @@ const Box = sequelize.define("Box", {
             key: "road_id"
         }
     },
+    // 时间策略开始 小时
     t_hour: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
+    // 时间策略开始 分钟
     t_minute: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
+    // 时间策略 阶段1 时长
     t_s1: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
+    // 时间策略 阶段1 亮度
     t_s1_b: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
+    // 时间策略 阶段2 时长
     t_s2: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
+    // 时间策略 阶段2 亮度
     t_s2_b: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
+    // 时间策略 阶段3 时长
     t_s3: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
+    // 时间策略 阶段3 亮度
     t_s3_b: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
+    // 时间策略 阶段4 时长
     t_s4: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
+    // 时间策略 阶段4 亮度
     t_s4_b: {
         type: DataTypes.INTEGER,
         defaultValue: 0
@@ -277,21 +308,37 @@ const Box = sequelize.define("Box", {
         }]
 });
 
+/**
+ * 定义Box与Road之间的关系，一个Box属于一个Road。
+ * 当Road被删除时，关联的Box也将被删除（CASCADE规则）。
+ */
 Box.belongsTo(Road, {
     foreignKey: "road_id",
     onDelete: "CASCADE"
 });
 
+/**
+ * 定义Box与Region之间的关系，一个Box属于一个Region。
+ * 当Region被删除时，关联的Box也将被删除（CASCADE规则）。
+ */
 Box.belongsTo(Region, {
     foreignKey: "region_id",
     onDelete: "CASCADE"
 });
 
+/**
+ * 定义Region与Box之间的多对一关系，一个Region可以有多个Box。
+ * 当Region被删除时，关联的Box也将被删除（CASCADE规则）。
+ */
 Region.hasMany(Box, {
     foreignKey: "region_id",
     onDelete: "CASCADE"
 });
 
+/**
+ * 定义Road与Box之间的多对一关系，一个Road可以有多个Box。
+ * 当Road被删除时，关联的Box也将被删除（CASCADE规则）。
+ */
 Road.hasMany(Box, {
     foreignKey: "road_id",
     onDelete: "CASCADE"
@@ -299,6 +346,7 @@ Road.hasMany(Box, {
 
 // BoxState Model
 const BoxState = sequelize.define("BoxState", {
+    // 盒子ID
     box_id: {
         type: DataTypes.STRING(16),
         allowNull: false,
@@ -308,11 +356,13 @@ const BoxState = sequelize.define("BoxState", {
             key: "box_id"
         }
     },
+    // 盒子状态
     state: {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0
     },
+    // 盒子亮度
     brightness: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -345,6 +395,7 @@ BoxState.belongsTo(Box, {
 
 // BoxLog Model
 const BoxLog = sequelize.define("BoxLog", {
+    // 盒子ID
     box_id: {
         type: DataTypes.STRING(16),
         allowNull: false,
@@ -353,18 +404,22 @@ const BoxLog = sequelize.define("BoxLog", {
             key: "box_id"
         }
     },
+    // 电压
     VOL: {
         type: DataTypes.FLOAT,
         allowNull: false
     },
+    // 电流
     CUR: {
         type: DataTypes.FLOAT,
         allowNull: false
     },
+    // 电量
     POW: {
         type: DataTypes.FLOAT,
         allowNull: false
     },
+    // 时间
     time_utc: {
         type: DataTypes.BIGINT,
         allowNull: false
@@ -396,6 +451,7 @@ BoxLog.belongsTo(Box, {
 
 // LeakageLog Model
 const LeakageLog = sequelize.define("LeakageLog", {
+    // 漏电保护ID
     leakage_id: {
         type: DataTypes.STRING(16),
         allowNull: false,
@@ -404,22 +460,27 @@ const LeakageLog = sequelize.define("LeakageLog", {
             key: "leakage_id"
         }
     },
+    // 消息ID
     msg_id: {
         type: DataTypes.BIGINT,
         allowNull: false
     },
+    // 时间
     time_utc: {
         type: DataTypes.BIGINT,
         allowNull: false
     },
+    // 电压
     V: {
         type: DataTypes.FLOAT,
         allowNull: false
     },
+    // 电流
     I: {
         type: DataTypes.FLOAT,
         allowNull: false
     },
+    // 电阻
     R: {
         type: DataTypes.FLOAT,
         allowNull: false
@@ -450,6 +511,7 @@ LeakageLog.belongsTo(Box, {
 
 // BoxAlert Model
 const BoxAlert = sequelize.define("BoxAlert", {
+    // 盒子ID
     box_id: {
         type: DataTypes.STRING(16),
         allowNull: false,
@@ -458,6 +520,7 @@ const BoxAlert = sequelize.define("BoxAlert", {
             key: "box_id"
         }
     },
+    // 报警设备
     alert_device: {
         // 1
         // 2
@@ -468,6 +531,7 @@ const BoxAlert = sequelize.define("BoxAlert", {
         type: DataTypes.STRING(4),
         allowNull: false
     },
+    // 报警类型
     alert_type: {
         // bit0
         // bit1
@@ -476,11 +540,13 @@ const BoxAlert = sequelize.define("BoxAlert", {
         type: DataTypes.STRING(4),
         allowNull: false
     },
+    // 报警内容
     alert_content: {
         type: DataTypes.FLOAT,
         allowNull: false,
         defaultValue: 0
     },
+    // 时间
     time_utc: {
         type: DataTypes.BIGINT,
         allowNull: false
@@ -512,6 +578,7 @@ BoxAlert.belongsTo(Box, {
 
 // LeakageAlert Model
 const LeakageAlert = sequelize.define("LeakageAlert", {
+    // 漏电保护ID
     leakage_id: {
         type: DataTypes.STRING(16),
         allowNull: false,
@@ -520,6 +587,7 @@ const LeakageAlert = sequelize.define("LeakageAlert", {
             key: "leakage_id"
         }
     },
+    // 报警类型
     alert_type: {
         // 1 = 电流
         // 2 = 电压
@@ -528,11 +596,13 @@ const LeakageAlert = sequelize.define("LeakageAlert", {
         type: DataTypes.INTEGER,
         allowNull: false
     },
+    // 报警内容
     alert_content: {
         type: DataTypes.FLOAT,
         defaultValue: 0,
         allowNull: false
     },
+    // 时间
     time_utc: {
         type: DataTypes.BIGINT,
         allowNull: false
