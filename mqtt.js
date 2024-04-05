@@ -1,3 +1,6 @@
+// mqtt.js
+// MQTT2MySQL
+
 import mqtt from "mqtt";
 import { Box, BoxLog, BoxState, LeakageLog, LeakageAlert, Setting, BoxAlert } from './model.js';
 import { logger } from "./app.js";
