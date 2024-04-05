@@ -1,3 +1,6 @@
+// model.js
+// Model Init
+
 import log4js from 'log4js';
 import { Sequelize, DataTypes } from "sequelize";
 
