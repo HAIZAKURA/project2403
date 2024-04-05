@@ -117,6 +117,18 @@ app.use('/api/box', box_router);
 import { box_state_router } from './router/box_state.js';
 app.use('/api/box_state', box_state_router);
 
+/** Box Log Router **/
+import { box_log_router } from './router/box_log.js';
+app.use('/api/box_log', box_log_router);
+
+/** Box Alert Router **/
+import { box_alert_router } from './router/box_alert.js';
+app.use('/api/box_alert', box_alert_router);
+
+/** Leakage Log Router **/
+import { leakage_log_router } from './router/leakage_log.js';
+app.use('/api/leakage_log', leakage_log_router);
+
 /** Robots.txt **/
 app.get('/robots.txt', (req, res) => {
     res.type('text/plain');
