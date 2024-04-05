@@ -66,14 +66,36 @@
 // data.push("a");
 // console.log(data);
 
-async function test() {
-    setTimeout(() => {
-        console.log("aaa");
-    }, 3000);
+// async function test() {
+//     setTimeout(() => {
+//         console.log("aaa");
+//     }, 3000);
+// }
+
+// test();
+// for (let i =1; i < 10; i++) {
+//     console.log(i);
+// }
+
+import { Op, Sequelize } from 'sequelize';
+
+let options = {
+    where: {},
+    order: [
+        ['time_utc', 'DESC']
+    ]
+};
+
+options.limit = 5;
+
+options.where = {
+    time_utc: {
+        [Op.gte]: 5,
+        [Op.lte]: 10
+    }
 }
 
-test();
-for (let i =1; i < 10; i++) {
-    console.log(i);
-}
+options.where.box_id = 1;
+
+console.log(options);
 
