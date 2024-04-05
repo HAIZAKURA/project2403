@@ -32,6 +32,7 @@ const logger = log4js.getLogger();
  * 设置日志记录级别为 'info'
  */
 logger.level = 'info';
+logger.info('Starting service...');
 
 // 使用log4js中间件记录HTTP请求日志
 app.use(log4js.connectLogger(
