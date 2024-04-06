@@ -138,13 +138,11 @@ app.use('/api/leakage_alert', leakage_alert_router);
 app.get('/robots.txt', (req, res) => {
     res.type('text/plain');
     res.send("User-agent: *\nDisallow: /");
-    return;
 });
 
 /** Router End **/
 
 // Express API Start
 app.listen(port, () => {
-    logger.info('Service Starting...');
     logger.info(`The Service is listening on port ${port}.`);
 });
