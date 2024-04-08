@@ -7,6 +7,7 @@ import log4js from 'log4js';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import session from 'express-session';
+import cors from 'cors';
 
 /**
  * 初始化 Express 应用
@@ -49,12 +50,17 @@ app.use(bodyParser.json());
 // 使用bodyParser中间件解析URL编码的请求体
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// 设置跨域访问控制，允许所有来源的GET和POST请求
+// 设置跨域访问控制，允许所有来源
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "*");
     next();
 });
+
+app.use(cors({
+    origin: true,
+    credentials: true
+}));
 
 // 使用express.static中间件提供静态文件服务
 app.use(express.static(join(__dirname, "public")));
