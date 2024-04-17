@@ -19,65 +19,6 @@ const router = express.Router();
 /** User Router Begin **/
 
 /**
- * 处理用户登录请求
- * @param {object} req - 请求对象，包含用户登录信息
- * @param {object} res - 响应对象，用于返回登录结果
- */
-router.post('/login', async (req, res) => {
-    try {
-        // 在用户表中查找指定用户名和经过MD5加密的密码的用户
-        let user = await Users.findOne({
-            attributes: ['uid', 'username', 'role'],
-            where: {
-                username: req.body.username,
-                password: md5(req.body.username + req.body.password)
-            }
-        });
-        // 如果未找到用户，则返回登录失败
-        if (user == null) {
-            res.json({
-                code: 401
-            });
-        } else {
-            // 如果找到用户，设置会话变量并返回登录成功信息
-            req.session.user = user;
-            req.session.isLogin = true;
-            res.json({
-                code: 200,
-                data: user
-            });
-        };
-    } catch (error) {
-        // 捕获并记录错误，返回失败信息
-        logger.error('Error:', error);
-        res.json({
-            code: 400
-        });
-    };
-});
-
-/**
- * 处理用户登出请求
- * @param {object} req - 请求对象
- * @param {object} res - 响应对象，用于返回登出结果
- */
-router.get('/logout', async (req, res) => {
-    try {
-        // 销毁用户会话
-        req.session.destroy();
-        res.json({
-            code: 200
-        });
-    } catch (error) {
-        // 捕获并记录错误，返回失败信息
-        logger.error('Error:', error);
-        res.json({
-            code: 400
-        });
-    }
-});
-
-/**
  * 获取所有用户信息的路由处理函数
  * 
  * @param {Object} req 请求对象，包含session信息和用户请求数据
