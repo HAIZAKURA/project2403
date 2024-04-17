@@ -32,7 +32,8 @@ router.post('/login', async (req, res) => {
             attributes: ['uid', 'username', 'role'],
             where: {
                 username: req.body.username,
-                password: md5(req.body.username + req.body.password)
+                password: md5(req.body.username + req.body.password),
+                active: 1
             }
         });
         
