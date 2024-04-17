@@ -55,6 +55,12 @@ const Users = sequelize.define("Users", {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0,
+    },
+    // 激活状态 0:未激活 1:已激活
+    active: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 1,
     }}, {
         tableName: "users",
         timestamps: false,
