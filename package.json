@@ -8,8 +8,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "export MYSQL_HOST=192.168.100.30 && export MYSQL_PASS=igQyl6aWUmuqauUT7N/tt1QbTMoSHGLH && node app.js",
-    "startclean": "node app.js"
+    "start": "node app.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
