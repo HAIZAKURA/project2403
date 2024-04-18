@@ -13,9 +13,9 @@ import cors from "cors";
 const app = express();
 
 /**
- * 设置服务器端口，优先使用环境变量定义的 SERVER_HOST，若未定义则默认使用 3010
+ * 设置服务器端口，优先使用环境变量定义的 SERVER_PORT，若未定义则默认使用 3010
  */
-const port = process.env.SERVER_HOST || 3010;
+const port = process.env.SERVER_PORT || 3010;
 
 /**
  * 获取当前文件所在的目录路径
