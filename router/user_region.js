@@ -62,7 +62,7 @@ router.post('', authenticateToken, async (req, res) => {
         if (req.user.role == 1) {
             // 尝试为用户创建区域信息
             let user_region = await UsersRegion.create({
-                user_id: req.body.user_id,
+                uid: req.body.uid,
                 region_id: req.body.region_id
             });
             // 根据创建结果返回不同的状态码
@@ -105,7 +105,7 @@ router.delete('', authenticateToken, async (req, res) => {
             // 尝试根据提供的用户ID和区域ID删除用户区域关联
             let user_region = await UsersRegion.destroy({
                 where: {
-                    user_id: req.body.user_id,
+                    uid: req.body.uid,
                     region_id: req.body.region_id
                 }
             });
