@@ -4,6 +4,7 @@
 import express from 'express';
 import { logger } from '../app.js';
 import { Region, Road } from '../model.js';
+import { authenticateToken } from "../tool/auth.js";
 
 const router = express.Router();
 
@@ -20,6 +21,7 @@ const router = express.Router();
 /**
  * 处理GET请求，获取所有道路信息
  * @param {Object} req 请求对象，包含请求参数和信息
+ * @query {String} region_id 区域ID
  * @param {Object} res 响应对象，用于发送响应给客户端
  */
 router.get('', async (req, res) => {
@@ -55,10 +57,10 @@ router.get('', async (req, res) => {
  * @param {Object} res 响应对象，用于返回处理结果。
  * @returns {Object} 根据不同的情况返回不同的代码。成功创建道路返回200，创建失败或无权限返回400，未登录或角色不是管理员返回401。
  */
-router.post('', async (req, res) => {
+router.post('', authenticateToken, async (req, res) => {
     try {
         // 检查用户是否已登录且角色为管理员
-        if (req.session.isLogin && req.session.user.role == 1) {
+        if (req.user.role == 1) {
             // 尝试创建新的道路记录
             let road = await Road.create({
                 road_name: req.body.road_name,
@@ -91,14 +93,15 @@ router.post('', async (req, res) => {
 
 /**
  * 使用PUT请求更新指定ID的道路信息。
+ * 
  * @param {Object} req - 请求对象，包含道路ID、更新后的道路名称和区域ID，以及会话信息。
  * @param {Object} res - 响应对象，用于返回操作结果代码。
  * @returns {Object} 返回一个包含操作状态代码的JSON对象。200表示更新成功，400表示更新失败，401表示未登录或用户角色无权限。
  */
-router.put('/:road_id', async (req, res) => {
+router.put('/:road_id', authenticateToken, async (req, res) => {
     try {
         // 检查用户是否已登录且具有管理员权限
-        if (req.session.isLogin && req.session.user.role == 1) {
+        if (req.user.role == 1) {
             // 尝试更新道路信息
             let road = await Road.update({
                 road_name: req.body.road_name,
@@ -135,14 +138,15 @@ router.put('/:road_id', async (req, res) => {
 
 /**
  * 删除指定的道路信息
+ * 
  * @param {Object} req - 请求对象，包含道路ID和会话信息
  * @param {Object} res - 响应对象，用于返回操作结果
  * @returns {Object} 返回一个包含操作状态码的JSON对象
  */
-router.delete('/:road_id', async (req, res) => {
+router.delete('/:road_id', authenticateToken, async (req, res) => {
     try {
         // 检查用户是否登录且具有管理员权限
-        if (req.session.isLogin && req.session.user.role == 1) {
+        if (req.user.role == 1) {
             // 尝试根据道路ID删除道路信息
             let road = await Road.destroy({
                 where: {
