@@ -9,8 +9,8 @@ import { crc16Modbus } from "./tool/crc16.js";
 /** MQTT2MySQL Begin **/
 
 // MQTT连接建立
-const mqtt_host = process.env.MQTT_HOST || "mqtt://sh.nya.run";
-const mqtt_port = process.env.MQTT_PORT || 38883;
+const mqtt_host = process.env.MQTT_HOST || "mqtt://127.0.0.1";
+const mqtt_port = process.env.MQTT_PORT || 1883;
 const connectUrl = `${mqtt_host}:${mqtt_port}`
 const clientId = "mysql_adapter_" + Math.random().toString(16).substring(2, 8);
 const client = mqtt.connect(connectUrl, {
