@@ -4,6 +4,7 @@
 import express from 'express';
 import { logger } from '../app.js';
 import { UsersRegion, Users, Region } from '../model.js';
+import { authenticateToken } from "../tool/auth.js";
 
 const router = express.Router();
 
@@ -22,10 +23,10 @@ const router = express.Router();
  * @param {object} res - 响应对象，用于返回处理结果。
  * @returns {object} 返回JSON格式的响应，包含代码和数据。
  */
-router.get('', async (req, res) => {
+router.get('', authenticateToken, async (req, res) => {
     try {
         // 检查用户是否登录且角色为1（管理员）
-        if (req.session.isLogin && req.session.user.role == 1) {
+        if (req.user.role == 1) {
             // 查询所有用户区域信息
             let user_region = await UsersRegion.findAll();
             // 返回成功代码和用户区域数据
@@ -55,10 +56,10 @@ router.get('', async (req, res) => {
  * @param {Object} res 响应对象，用于返回处理结果
  * @returns {Object} 返回一个包含操作状态码的JSON对象
  */
-router.post('', async (req, res) => {
+router.post('', authenticateToken, async (req, res) => {
     try {
         // 检查用户是否登录且角色为1（具有特定权限）
-        if (req.session.isLogin && req.session.user.role == 1) {
+        if (req.user.role == 1) {
             // 尝试为用户创建区域信息
             let user_region = await UsersRegion.create({
                 user_id: req.body.user_id,
@@ -97,10 +98,10 @@ router.post('', async (req, res) => {
  * @param {Object} res - 响应对象，用于返回操作结果。
  * @returns {Object} 返回一个包含操作状态码的JSON对象。200表示删除成功，400表示删除失败，401表示未登录或权限不足。
  */
-router.delete('', async (req, res) => {
+router.delete('', authenticateToken, async (req, res) => {
     try {
         // 检查用户是否登录且角色为1（具有删除权限）
-        if (req.session.isLogin && req.session.user.role == 1) {
+        if (req.user.role == 1) {
             // 尝试根据提供的用户ID和区域ID删除用户区域关联
             let user_region = await UsersRegion.destroy({
                 where: {
