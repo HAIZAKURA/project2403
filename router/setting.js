@@ -4,6 +4,7 @@
 import express from 'express';
 import { logger } from '../app.js';
 import { Setting } from '../model.js';
+import { authenticateToken } from "../tool/auth.js";
 
 const router = express.Router();
 
@@ -23,10 +24,10 @@ const router = express.Router();
  * @param {Object} res - 响应对象，用于返回操作结果
  * @returns {Object} 返回一个包含操作状态码的JSON对象
  */
-router.put('/:setting_id', async (req, res) => {
+router.put('/:setting_id', authenticateToken, async (req, res) => {
     try {
         // 检查用户是否登录且具有管理员权限
-        if (req.session.isLogin && req.session.user.role == 1) {
+        if (req.user.role == 1) {
             // 更新设置值
             let setting = await Setting.update({
                 setting_value: req.body.setting_value
