@@ -4,6 +4,7 @@
 import express from 'express';
 import { logger } from '../app.js';
 import { Region, Road, Users } from '../model.js';
+import { authenticateToken } from "../tool/auth.js";
 
 const router = express.Router();
 
@@ -82,10 +83,10 @@ router.get('/:region_id', async (req, res) => {
  * @param {Object} req 请求对象，包含用户信息和请求体中的地区名称。
  * @param {Object} res 响应对象，用于返回操作结果。
  */
-router.post('', async (req, res) => {
+router.post('', authenticateToken, async (req, res) => {
     try {
         // 检查用户是否已登录并且角色为1（具有创建地区的权限）
-        if (req.session.isLogin && req.session.user.role == 1) {
+        if (req.user.role == 1) {
             // 尝试创建新的地区信息
             let region = await Region.create({
                 region_name: req.body.region_name
@@ -118,14 +119,15 @@ router.post('', async (req, res) => {
 
 /**
  * 更新指定区域信息
+ * 
  * @param {Object} req - 请求对象，包含路径参数、请求体和会话信息
  * @param {Object} res - 响应对象，用于返回处理结果
  * @returns {Object} 返回一个包含操作状态码和数据的JSON对象
  */
-router.put('/:region_id', async (req, res) => {
+router.put('/:region_id', authenticateToken, async (req, res) => {
     try {
         // 检查用户是否登录且角色为管理员
-        if (req.session.isLogin && req.session.user.role == 1) {
+        if (req.user.role == 1) {
             // 更新区域信息
             let region = await Region.update({
                 region_name: req.body.region_name
@@ -162,14 +164,15 @@ router.put('/:region_id', async (req, res) => {
 
 /**
  * 删除指定区域的信息
+ * 
  * @param {Object} req - 请求对象，包含路径参数、会话信息等
  * @param {Object} res - 响应对象，用于返回操作结果
  * @returns {Object} 返回一个包含操作状态码的JSON对象
  */
-router.delete('/:region_id', async (req, res) => {
+router.delete('/:region_id', authenticateToken, async (req, res) => {
     try {
         // 检查用户是否登录且具有管理员权限
-        if (req.session.isLogin && req.session.user.role == 1) {
+        if (req.user.role == 1) {
             // 尝试根据区域ID删除区域信息
             let region = await Region.destroy({
                 where: {
