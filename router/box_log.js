@@ -76,7 +76,7 @@ router.get('', authenticateToken, async (req, res) => {
                 };
             });
             // 根据查询结果，返回相应的响应
-            if (box_log) {
+            if (results) {
                 res.json({
                     code: 200,
                     data: results
