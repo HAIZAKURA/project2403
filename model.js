@@ -270,42 +270,42 @@ const Box = sequelize.define("Box", {
         defaultValue: 0
     },
     // 时间策略 阶段1 时长
-    t_s1: {
+    s1_t: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
     // 时间策略 阶段1 亮度
-    t_s1_b: {
+    s1_b: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
     // 时间策略 阶段2 时长
-    t_s2: {
+    s2_t: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
     // 时间策略 阶段2 亮度
-    t_s2_b: {
+    s2_b: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
     // 时间策略 阶段3 时长
-    t_s3: {
+    s3_t: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
     // 时间策略 阶段3 亮度
-    t_s3_b: {
+    s3_b: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
     // 时间策略 阶段4 时长
-    t_s4: {
+    s4_t: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
     // 时间策略 阶段4 亮度
-    t_s4_b: {
+    s4_b: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
@@ -642,6 +642,7 @@ LeakageAlert.belongsTo(Box, {
 });
 
 export {
+    sequelize,
     Users,
     Setting,
     Region,
