@@ -108,7 +108,6 @@ router.get("/:uid", authenticateToken, async (req, res) => {
       attributes: ["uid", "username", "role", "active"], // 选择需要返回的用户属性
       include: {
         model: Region,
-        as: "users_region",
         attributes: ["region_id", "region_name"], // 包含区域ID和区域名称
       },
     });
