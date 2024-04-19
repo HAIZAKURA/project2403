@@ -3,8 +3,9 @@
 
 import express from 'express';
 import { logger } from '../app.js';
-import { Box } from '../model.js';
+import { Box, BoxState, sequelize } from '../model.js';
 import { authenticateToken } from "../tool/auth.js";
+import { light_set_time, light_query_time } from '../mqtt.js';
 
 const router = express.Router();
 
@@ -39,14 +40,34 @@ router.get('', authenticateToken, async (req, res) => {
         // 查询满足条件的所有Box信息
         let box = await Box.findAll({
             where: where_clause,
-            attributes: ['box_id', 'leakage_id', 'light_id', 'latitude', 'longitude', 'region_id', 'road_id']
+            attributes: ['box_id', 'leakage_id', 'light_id', 'latitude', 'longitude', 'region_id', 'road_id'],
+            include: [{
+                model: BoxState,
+                required: true,
+                attributes: ['state', 'brightness']
+            }]
         });
 
+        // 处理查询结果，格式化为需要的输出格式
+        let results = box.map(r => {
+            return {
+                box_id: r.box_id,
+                leakage_id: r.leakage_id,
+                light_id: r.light_id,
+                latitude: r.latitude,
+                longitude: r.longitude,
+                region_id: r.region_id,
+                road_id: r.road_id,
+                state: r.BoxState.state,
+                brightness: r.BoxState.brightness
+            };
+        })
+
         // 根据查询结果返回相应信息
-        if (box) {
+        if (results) {
             res.json({
                 code: 200,
-                data: box
+                data: results
             });
         } else {
             res.json({
@@ -56,6 +77,59 @@ router.get('', authenticateToken, async (req, res) => {
     } catch (error) {
         // 捕获并记录错误信息，然后返回错误代码
         logger.error('Error:', error);
+        res.json({
+            code: 400
+        });
+    }
+});
+
+/**
+ * 处理POST请求，用于创建一个新的Box实例。
+ * 如果用户已登录，将根据请求体中的信息创建Box对象。
+ * 
+ * @param {Object} req 请求对象，包含用户信息及POST请求的数据。
+ * @param {Object} res 响应对象，用于返回处理结果。
+ */
+router.post('', authenticateToken, async (req, res) => {
+    // 创建事务对象
+    let transaction = await sequelize.transaction();
+    
+    try {
+        // 创建新的Box实例
+        let box = await Box.create({
+            box_id: req.body.box_id,
+            leakage_id: req.body.leakage_id,
+            light_id: req.body.light_id,
+            latitude: req.body.latitude,
+            longitude: req.body.longitude,
+            region_id: req.body.region_id,
+            road_id: req.body.road_id
+        }, { transaction });
+
+        // 创建新的BoxState实例
+        let box_state = await BoxState.create({
+            box_id: box.box_id
+        }, { transaction });
+
+        // 提交事务
+        await transaction.commit();
+
+        // 根据创建结果返回相应的状态码
+        if (box && box_state) {
+            res.json({
+                code: 200
+            });
+        } else {
+            res.json({
+                code: 400
+            });
+        }
+    } catch (error) {
+        // 如果发生异常，回滚事务
+        await transaction.rollback();
+        // 捕获异常，并记录错误信息
+        logger.error('Error:', error);
+        // 返回状态码400表示请求失败
         res.json({
             code: 400
         });
@@ -81,45 +155,6 @@ router.get('/:box_id', authenticateToken, async (req, res) => {
         // 捕获并记录错误信息
         logger.error('Error:', error);
         // 返回通用错误信息
-        res.json({
-            code: 400
-        });
-    }
-});
-
-/**
- * 处理POST请求，用于创建一个新的Box实例。
- * 如果用户已登录，将根据请求体中的信息创建Box对象。
- * 
- * @param {Object} req 请求对象，包含用户信息及POST请求的数据。
- * @param {Object} res 响应对象，用于返回处理结果。
- */
-router.post('', authenticateToken, async (req, res) => {
-    try {
-        // 创建新的Box实例
-        let box = await Box.create({
-            box_id: req.body.box_id,
-            leakage_id: req.body.leakage_id,
-            light_id: req.body.light_id,
-            latitude: req.body.latitude,
-            longitude: req.body.longitude,
-            region_id: req.body.region_id,
-            road_id: req.body.road_id
-        });
-        // 根据创建结果返回相应的状态码
-        if (box) {
-            res.json({
-                code: 200
-            });
-        } else {
-            res.json({
-                code: 400
-            });
-        }
-    } catch (error) {
-        // 捕获异常，并记录错误信息
-        logger.error('Error:', error);
-        // 返回状态码400表示请求失败
         res.json({
             code: 400
         });
@@ -164,6 +199,47 @@ router.put('/:box_id', authenticateToken, async (req, res) => {
         });
     }
 });
+
+/**
+ * POST请求处理函数，用于根据提供的box_id和请求体中的信息来设置或查询灯光的时间配置。
+ * 
+ * @param {Object} req - 请求对象，包含HTTP请求中的参数和主体数据。
+ * @param {Object} res - 响应对象，用于发送HTTP响应。
+ * @returns {Void} 无返回值，通过res.json发送响应数据。
+ */
+router.post('/:box_id', authenticateToken, async (req, res) => {
+    try {
+        // 尝试根据请求参数和主体数据来设置灯光时间配置
+        let set = light_set_time(req.params.box_id, req.body);
+        if (set) {
+            // 如果设置成功，尝试查询灯光时间配置
+            let query = light_query_time(req.params.box_id);
+            if (query) {
+                // 如果查询成功，返回200状态码
+                res.json({
+                    code: 200
+                });
+            } else {
+                // 如果查询失败，返回400状态码
+                res.json({
+                    code: 400
+                });
+            }
+        } else {
+            // 如果设置失败，返回400状态码
+            res.json({
+                code: 400
+            });
+        }
+    } catch (error) {
+        // 捕获并记录异常
+        logger.error('Error:', error);
+        // 异常情况下返回400状态码
+        res.json({
+            code: 400
+        });
+    }
+})
 
 /**
  * 删除指定的盒子信息
