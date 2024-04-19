@@ -55,11 +55,9 @@ router.get('/:region_id', async (req, res) => {
         let region = await Region.findByPk(req.params.region_id, {
             include: [{
                 model: Users,
-                as: 'users_region',
                 attributes: ['uid', 'username']
             }, {
                 model: Road,
-                as: 'roads',
                 attributes: ['road_id', 'road_name']
             }]
         });
