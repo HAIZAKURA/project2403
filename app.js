@@ -130,6 +130,9 @@ app.use("/api/leakage_log", leakage_log_router);
 import { leakage_alert_router } from "./router/leakage_alert.js";
 app.use("/api/leakage_alert", leakage_alert_router);
 
+import { test_router } from "./router/test.js";
+app.use("/api/test", test_router);
+
 /** Robots.txt **/
 app.get("/robots.txt", (req, res) => {
   res.type("text/plain");
