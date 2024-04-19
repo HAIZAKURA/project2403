@@ -142,26 +142,6 @@ const UsersRegion = sequelize.define("UsersRegion", {
         }]
 });
 
-/**
- * 定义Region模型和Users模型之间的多对多关系
- */
-Users.belongsToMany(Region, {
-    through: UsersRegion,
-    as: "users_region",
-    foreignKey: "uid",
-    onDelete: "CASCADE"
-});
-
-/**
- * 定义Region模型和Users模型之间的多对多关系
- */
-Region.belongsToMany(Users, {
-    through: UsersRegion,
-    as: "users_region",
-    foreignKey: "region_id",
-    onDelete: "CASCADE"
-});
-
 // Road Model
 const Road = sequelize.define("Road", {
     // 道路ID
@@ -191,24 +171,6 @@ const Road = sequelize.define("Road", {
             unique: true,
             fields: ["road_id", "road_name", "region_id"]
         }]
-});
-
-/**
- * 定义Region模型和Road模型之间的多对一关系
- */
-Region.hasMany(Road, {
-    foreignKey: "region_id",
-    as: "roads",
-    onDelete: "CASCADE"
-});
-
-/**
- * 定义Region模型和Road模型之间的一对一关系
- */
-Road.belongsTo(Region, {
-    foreignKey: "region_id",
-    as: "region",
-    onDelete: "CASCADE"
 });
 
 // Box Model
@@ -317,42 +279,6 @@ const Box = sequelize.define("Box", {
         }]
 });
 
-/**
- * 定义Box与Road之间的关系，一个Box属于一个Road。
- * 当Road被删除时，关联的Box也将被删除（CASCADE规则）。
- */
-Box.belongsTo(Road, {
-    foreignKey: "road_id",
-    onDelete: "CASCADE"
-});
-
-/**
- * 定义Box与Region之间的关系，一个Box属于一个Region。
- * 当Region被删除时，关联的Box也将被删除（CASCADE规则）。
- */
-Box.belongsTo(Region, {
-    foreignKey: "region_id",
-    onDelete: "CASCADE"
-});
-
-/**
- * 定义Region与Box之间的多对一关系，一个Region可以有多个Box。
- * 当Region被删除时，关联的Box也将被删除（CASCADE规则）。
- */
-Region.hasMany(Box, {
-    foreignKey: "region_id",
-    onDelete: "CASCADE"
-});
-
-/**
- * 定义Road与Box之间的多对一关系，一个Road可以有多个Box。
- * 当Road被删除时，关联的Box也将被删除（CASCADE规则）。
- */
-Road.hasMany(Box, {
-    foreignKey: "road_id",
-    onDelete: "CASCADE"
-});
-
 // BoxState Model
 const BoxState = sequelize.define("BoxState", {
     // 盒子ID
@@ -384,22 +310,6 @@ const BoxState = sequelize.define("BoxState", {
             unique: true,
             fields: ["box_id"]
         }]
-});
-
-/**
- * 定义Box模型与BoxState模型之间的一对一关系
- */
-Box.hasOne(BoxState, {
-    foreignKey: "box_id",
-    onDelete: "CASCADE"
-});
-
-/**
- * 定义Box模型与BoxState模型之间的一对一关系
- */
-BoxState.belongsTo(Box, {
-    foreignKey: "box_id",
-    onDelete: "CASCADE"
 });
 
 // BoxLog Model
@@ -440,22 +350,6 @@ const BoxLog = sequelize.define("BoxLog", {
             unique: true,
             fields: ["box_id", "time_utc"]
         }]
-});
-
-/**
- * 定义Box与BoxLog之间的多对一关系
- */
-Box.hasMany(BoxLog, {
-    foreignKey: "box_id",
-    onDelete: "CASCADE"
-});
-
-/**
- * 定义Box与BoxLog之间的一对一关系
- */
-BoxLog.belongsTo(Box, {
-    foreignKey: "box_id",
-    onDelete: "CASCADE"
 });
 
 // LeakageLog Model
@@ -500,22 +394,6 @@ const LeakageLog = sequelize.define("LeakageLog", {
         indexes: [{
             fields: ["leakage_id", "time_utc"]
         }]
-});
-
-/**
- * 定义Box与LeakageLog之间的多对一关系
- */
-Box.hasMany(LeakageLog, {
-    foreignKey: "leakage_id",
-    onDelete: "CASCADE"
-});
-
-/**
- * 定义Box与LeakageLog之间的一对一关系
- */
-LeakageLog.belongsTo(Box, {
-    foreignKey: "leakage_id",
-    onDelete: "CASCADE"
 });
 
 // BoxAlert Model
@@ -569,22 +447,6 @@ const BoxAlert = sequelize.define("BoxAlert", {
         }]
 });
 
-/**
- * 定义Box与BoxAlert之间的多对一关系
- */
-Box.hasMany(BoxAlert, {
-    foreignKey: "box_id",
-    onDelete: "CASCADE"
-});
-
-/**
- * 定义Box与BoxAlert之间的一对一关系
- */
-BoxAlert.belongsTo(Box, {
-    foreignKey: "box_id",
-    onDelete: "CASCADE"
-});
-
 // LeakageAlert Model
 const LeakageAlert = sequelize.define("LeakageAlert", {
     // 漏电保护ID
@@ -625,17 +487,95 @@ const LeakageAlert = sequelize.define("LeakageAlert", {
         }]
 });
 
-/**
- * 定义Box与LeakageLog之间的多对一关系
- */
+/**********************/
+
+Users.belongsToMany(Region, {
+    through: UsersRegion,
+    foreignKey: "uid",
+    onDelete: "CASCADE"
+});
+
+Region.belongsToMany(Users, {
+    through: UsersRegion,
+    foreignKey: "region_id",
+    onDelete: "CASCADE"
+});
+
+Region.hasMany(Road, {
+    foreignKey: "region_id",
+    onDelete: "CASCADE"
+});
+
+Road.belongsTo(Region, {
+    foreignKey: "region_id",
+    onDelete: "CASCADE"
+});
+
+Box.belongsTo(Road, {
+    foreignKey: "road_id",
+    onDelete: "CASCADE"
+});
+
+Box.belongsTo(Region, {
+    foreignKey: "region_id",
+    onDelete: "CASCADE"
+});
+
+Region.hasMany(Box, {
+    foreignKey: "region_id",
+    onDelete: "CASCADE"
+});
+
+Road.hasMany(Box, {
+    foreignKey: "road_id",
+    onDelete: "CASCADE"
+});
+
+Box.hasOne(BoxState, {
+    foreignKey: "box_id",
+    onDelete: "CASCADE"
+});
+
+BoxState.belongsTo(Box, {
+    foreignKey: "box_id",
+    onDelete: "CASCADE"
+});
+
+Box.hasMany(BoxLog, {
+    foreignKey: "box_id",
+    onDelete: "CASCADE"
+});
+
+BoxLog.belongsTo(Box, {
+    foreignKey: "box_id",
+    onDelete: "CASCADE"
+});
+
+Box.hasMany(LeakageLog, {
+    foreignKey: "leakage_id",
+    onDelete: "CASCADE"
+});
+
+LeakageLog.belongsTo(Box, {
+    foreignKey: "leakage_id",
+    onDelete: "CASCADE"
+});
+
+Box.hasMany(BoxAlert, {
+    foreignKey: "box_id",
+    onDelete: "CASCADE"
+});
+
+BoxAlert.belongsTo(Box, {
+    foreignKey: "box_id",
+    onDelete: "CASCADE"
+});
+
 Box.hasMany(LeakageAlert, {
     foreignKey: "leakage_id",
     onDelete: "CASCADE"
 });
 
-/**
- * 定义Box与LeakageLog之间的一对一关系
- */
 LeakageAlert.belongsTo(Box, {
     foreignKey: "leakage_id",
     onDelete: "CASCADE"
