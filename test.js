@@ -77,25 +77,29 @@
 //     console.log(i);
 // }
 
-import { Op, Sequelize } from 'sequelize';
+import { Box, BoxAlert, Region, Road, Users } from "./model.js";
 
-let options = {
-    where: {},
-    order: [
-        ['time_utc', 'DESC']
+let alert = await Box.findAll({
+    include: [
+        {
+            model: BoxAlert,
+            required: true
+        }, {
+            model: Region,
+            required: true,
+            include: [{
+                model: Users,
+                required: true,
+                where: {
+                    uid: 2
+                }
+            }]
+        }, {
+            model: Road,
+            required: true
+        }
     ]
-};
+});
 
-options.limit = 5;
-
-options.where = {
-    time_utc: {
-        [Op.gte]: 5,
-        [Op.lte]: 10
-    }
-}
-
-options.where.box_id = 1;
-
-console.log(options);
+console.log(alert);
 
