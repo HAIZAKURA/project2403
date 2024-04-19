@@ -291,26 +291,26 @@ async function light_set_time(id, data) {
         logger.error("Light Set Time: Invalid data provided.", data);
         return false;
     }
-    // 构建MQTT消息的主题
-    let topic = "/a13jYFS3MfN/" + id.toUpperCase() + "/user/get";
-    // 将小时、分钟和设置的数据转换为16进制字符串，并确保它们是两位数
-    let hour = padToTwoDigits(data.hour);
-    let minute = padToTwoDigits(data.minute);
-    let s1_t = padToFourDigits(data.s1.t);
-    let s1_b = padToTwoDigits(data.s1.b);
-    let s2_t = padToFourDigits(data.s2.t);
-    let s2_b = padToTwoDigits(data.s2.b);
-    let s3_t = padToFourDigits(data.s3.t);
-    let s3_b = padToTwoDigits(data.s3.b);
-    let s4_t = padToFourDigits(data.s4.t);
-    let s4_b = padToTwoDigits(data.s4.b);
-    // 构造控制灯的命令字符串
-    let cmdStr = "AA00" + id.toUpperCase() + + "A2100101" + hour + minute + s1_t + s1_b + s2_t + s2_b + s3_t + s3_b + s4_t + s4_b;
-    // 计算命令字符串的校验和
-    let sum = crc16Modbus(cmdStr);
-    // 将命令字符串和校验和转换为Buffer，以便发送
-    let cmd = Buffer.from(cmdStr + sum, "hex");
     try {
+        // 构建MQTT消息的主题
+        let topic = "/a13jYFS3MfN/" + id.toUpperCase() + "/user/get";
+        // 将小时、分钟和设置的数据转换为16进制字符串，并确保它们是两位数
+        let t_hour = padToTwoDigits(data.t_hour);
+        let t_minute = padToTwoDigits(data.t_minute);
+        let s1_t = padToFourDigits(data.s1_t);
+        let s1_b = padToTwoDigits(data.s1_b);
+        let s2_t = padToFourDigits(data.s2_t);
+        let s2_b = padToTwoDigits(data.s2_b);
+        let s3_t = padToFourDigits(data.s3_t);
+        let s3_b = padToTwoDigits(data.s3_b);
+        let s4_t = padToFourDigits(data.s4_t);
+        let s4_b = padToTwoDigits(data.s4_b);
+        // 构造控制灯的命令字符串
+        let cmdStr = "AA00" + id.toUpperCase() + + "A2100101" + t_hour + t_minute + s1_t + s1_b + s2_t + s2_b + s3_t + s3_b + s4_t + s4_b;
+        // 计算命令字符串的校验和
+        let sum = crc16Modbus(cmdStr);
+        // 将命令字符串和校验和转换为Buffer，以便发送
+        let cmd = Buffer.from(cmdStr + sum, "hex");
         // 尝试通过MQTT发布消息
         await client.publishAsync(topic, cmd, { qos: 2 });
         return true; // 消息发布成功
@@ -358,23 +358,22 @@ async function light_query_time(id) {
  * @returns {Promise<void>} 不返回任何内容
  */
 async function light_update_time(id, data) {
-    // 将传入的16进制字符串数组转换为对应的整数，用于设置时间策略参数
-    let hour = parseInt(data[0], 16);
-    let minute = parseInt(data[1], 16);
-    let s1_t = parseInt(data[2], 16);
-    let s1_b = parseInt(data[3], 16);
-    let s2_t = parseInt(data[4], 16);
-    let s2_b = parseInt(data[5], 16);
-    let s3_t = parseInt(data[6], 16);
-    let s3_b = parseInt(data[7], 16);
-    let s4_t = parseInt(data[8], 16);
-    let s4_b = parseInt(data[9], 16);
-    
     try {
+        // 将传入的16进制字符串数组转换为对应的整数，用于设置时间策略参数
+        let t_hour = parseInt(data[0], 16);
+        let t_minute = parseInt(data[1], 16);
+        let s1_t = parseInt(data[2], 16);
+        let s1_b = parseInt(data[3], 16);
+        let s2_t = parseInt(data[4], 16);
+        let s2_b = parseInt(data[5], 16);
+        let s3_t = parseInt(data[6], 16);
+        let s3_b = parseInt(data[7], 16);
+        let s4_t = parseInt(data[8], 16);
+        let s4_b = parseInt(data[9], 16);
         // 使用await关键字暂停执行，直到数据库更新完成。尝试更新指定时间策略
         await Box.update({
-                t_hour: hour,
-                t_minute: minute,
+                t_hour: t_hour,
+                t_minute: t_minute,
                 s1_t: s1_t,
                 s1_b: s1_b,
                 s2_t: s2_t,
@@ -716,4 +715,4 @@ client.on("message", (topic, message) => {
     }
 })();
 
-export { client };
+export { client, light_set_time, light_query_time };
