@@ -69,7 +69,7 @@ router.get('', authenticateToken, async (req, res) => {
                     light_id: r.Box.light_id,
                     region_id: r.Box.region_id,
                     road_id: r.Box.road_id,
-                    road_name: r.Road.road_name,
+                    road_name: r.Box.Road.road_name,
                     alert_type: r.alert_type,
                     alert_content: r.alert_content,
                     time_utc: r.time_utc,
