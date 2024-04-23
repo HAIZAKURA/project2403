@@ -113,11 +113,9 @@ const Region = sequelize.define("Region", {
         tableName: "region",
         timestamps: false,
         indexes: [{
-            unique: true,
             fields: ["region_id"]
         }],
         indexes: [{
-            unique: true,
             fields: ["region_name"]
         }]
 });
@@ -178,11 +176,9 @@ const Road = sequelize.define("Road", {
         tableName: "road",
         timestamps: false,
         indexes: [{
-            unique: true,
             fields: ["road_id"]
         }],
         indexes: [{
-            unique: true,
             fields: ["road_name"]
         }],
         indexes: [{
@@ -201,7 +197,8 @@ const Box = sequelize.define("Box", {
     // 漏电保护ID
     leakage_id: {
         type: DataTypes.STRING(16),
-        allowNull: false
+        allowNull: false,
+        primaryKey: true
     },
     // 灯柱ID
     light_id: {
