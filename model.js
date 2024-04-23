@@ -197,8 +197,7 @@ const Box = sequelize.define("Box", {
     // 漏电保护ID
     leakage_id: {
         type: DataTypes.STRING(16),
-        allowNull: false,
-        primaryKey: true
+        allowNull: false
     },
     // 灯柱ID
     light_id: {
