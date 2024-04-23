@@ -66,7 +66,11 @@ const Users = sequelize.define("Users", {
         timestamps: false,
         indexes: [{
             unique: true,
-            fields: ["uid", "username"]
+            fields: ["uid"]
+        }],
+        indexes: [{
+            unique: true,
+            fields: ["username"]
         }]
 });
 
@@ -110,7 +114,11 @@ const Region = sequelize.define("Region", {
         timestamps: false,
         indexes: [{
             unique: true,
-            fields: ["region_id", "region_name"]
+            fields: ["region_id"]
+        }],
+        indexes: [{
+            unique: true,
+            fields: ["region_name"]
         }]
 });
 
@@ -137,8 +145,10 @@ const UsersRegion = sequelize.define("UsersRegion", {
         tableName: "users_region",
         timestamps: false,
         indexes: [{
-            unique: true,
-            fields: ["uid", "region_id"]
+            fields: ["uid"]
+        }],
+        indexes: [{
+            fields: ["region_id"]
         }]
 });
 
@@ -169,7 +179,14 @@ const Road = sequelize.define("Road", {
         timestamps: false,
         indexes: [{
             unique: true,
-            fields: ["road_id", "road_name", "region_id"]
+            fields: ["road_id"]
+        }],
+        indexes: [{
+            unique: true,
+            fields: ["road_name"]
+        }],
+        indexes: [{
+            fields: ["region_id"]
         }]
 });
 
@@ -275,7 +292,16 @@ const Box = sequelize.define("Box", {
         tableName: "box",
         timestamps: false,
         indexes: [{
-            fields: ["box_id", "leakage_id", "region_id", "road_id"]
+            fields: ["box_id"]
+        }],
+        indexes: [{
+            fields: ["leakage_id"]
+        }],
+        indexes: [{
+            fields: ["region_id"]
+        }],
+        indexes: [{
+            fields: ["road_id"]
         }]
 });
 
@@ -307,7 +333,6 @@ const BoxState = sequelize.define("BoxState", {
         tableName: "box_state",
         timestamps: false,
         indexes: [{
-            unique: true,
             fields: ["box_id"]
         }]
 });
@@ -347,8 +372,10 @@ const BoxLog = sequelize.define("BoxLog", {
         tableName: "box_log",
         timestamps: false,
         indexes: [{
-            unique: true,
-            fields: ["box_id", "time_utc"]
+            fields: ["box_id"]
+        }],
+        indexes: [{
+            fields: ["time_utc"]
         }]
 });
 
@@ -392,7 +419,10 @@ const LeakageLog = sequelize.define("LeakageLog", {
         tableName: "leakage_log",
         timestamps: false,
         indexes: [{
-            fields: ["leakage_id", "time_utc"]
+            fields: ["leakage_id"]
+        }],
+        indexes: [{
+            fields: ["time_utc"]
         }]
 });
 
@@ -442,8 +472,10 @@ const BoxAlert = sequelize.define("BoxAlert", {
         tableName: "box_alert",
         timestamps: false,
         indexes: [{
-            unique: true,
-            fields: ["box_id", "alert_type", "time_utc"]
+            fields: ["box_id"]
+        }],
+        indexes: [{
+            fields: ["time_utc"]
         }]
 });
 
@@ -482,8 +514,10 @@ const LeakageAlert = sequelize.define("LeakageAlert", {
         tableName: "leakage_alert",
         timestamps: false,
         indexes: [{
-            unique: true,
-            fields: ["leakage_id", "alert_type", "time_utc"]
+            fields: ["leakage_id"]
+        }],
+        indexes: [{
+            fields: ["time_utc"]
         }]
 });
 
